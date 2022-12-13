@@ -26,7 +26,7 @@ function TodoListCard() {
         },
         [items],
     );
-
+//update
     const onItemUpdate = React.useCallback(
         item => {
             const index = items.findIndex(i => i.id === item.id);
@@ -38,7 +38,7 @@ function TodoListCard() {
         },
         [items],
     );
-
+//--------------
     const onItemRemoval = React.useCallback(
         item => {
             const index = items.findIndex(i => i.id === item.id);
@@ -88,6 +88,54 @@ function AddItemForm({ onNewItem }) {
                 setNewItem('');
             });
     };
+// update
+    function UpdateItemForm({ onItemUpdate }) {
+        const { Form, InputGroup, Button } = ReactBootstrap;
+    
+        const [getItem, setGetItem] = React.useState('');
+        const [submitting, setSubmitting] = React.useState(false);
+    
+        const submitGetItem = e => {
+            e.preventDefault();
+            setSubmitting(true);
+            fetch('/items', {
+                method: 'POST',
+                body: JSON.stringify({ name: newItem }),
+                headers: { 'Content-Type': 'application/json' },
+            })
+                .then(r => r.json())
+                .then(item => {
+                    onItemUpdate(item);
+                    setSubmitting(false);
+                    setGetItem('');
+                });
+        };
+
+        return (
+            <Form onSubmit={submitGetItem}>
+                <InputGroup className="mb-3">
+                    <Form.Control
+                        value={newItem}
+                        onChange={e => setGetItem(e.target.value)}
+                        type="text"
+                        placeholder="New Item"
+                        aria-describedby="basic-addon1"
+                    />
+                    <InputGroup.Append>
+                        <Button
+                            type="submit"
+                            variant="success"
+                            disabled={!getItem.length}
+                            className={submitting ? 'disabled' : ''}
+                        >
+                            {submitting ? 'Adding...' : 'Add Item'}
+                        </Button>
+                    </InputGroup.Append>
+                </InputGroup>
+            </Form>
+        );
+    }
+//----------
 
     return (
         <Form onSubmit={submitNewItem}>
@@ -135,7 +183,13 @@ function ItemDisplay({ item, onItemUpdate, onItemRemoval }) {
             onItemRemoval(item),
         );
     };
-
+// update
+    const getItem= () => {
+        fetch(`/items/${item.id}`, { method: 'Get' }).then(() =>
+            onItemUpdate(item),
+        );
+    };
+//--------------
     return (
         <Container fluid className={`item ${item.completed && 'completed'}`}>
             <Row>
@@ -170,7 +224,16 @@ function ItemDisplay({ item, onItemUpdate, onItemRemoval }) {
                     >
                         <i className="fa fa-trash text-danger" />
                     </Button>
+                    <Button
+                        size="sm"
+                        variant="link"
+                        onClick={getItem}
+                        aria-label="Get Item"
+                    >
+                        <i className="fa fa-edit text-info" />
+                    </Button>
                 </Col>
+                
             </Row>
         </Container>
     );
